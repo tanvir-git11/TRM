@@ -546,15 +546,171 @@
             padding: 15px;
         }
 
-        #imgViewerModal img {
-            max-width: 100%;
-            max-height: 75vh;
-            border-radius: 12px;
-            object-fit: contain;
+        /* Admin Login Overlay Modal */
+        .admin-login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.97);
+            backdrop-filter: blur(25px);
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: opacity 0.3s ease;
+        }
+
+        .admin-login-card {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(30, 27, 75, 0.95));
+            border: 2px solid #7c3aed;
+            box-shadow: 0 0 50px rgba(124, 58, 237, 0.4), 0 10px 30px rgba(0, 0, 0, 0.8);
+            border-radius: 24px;
+            padding: 36px 28px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            position: relative;
+        }
+
+        .admin-login-card .lock-badge {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 18px;
+            background: rgba(124, 58, 237, 0.15);
+            border: 2px solid #7c3aed;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #38bdf8;
+            font-size: 30px;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+        }
+
+        .admin-login-card h3 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #38bdf8, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+        }
+
+        .admin-login-card p {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 22px;
+        }
+
+        .admin-input-group {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .admin-input-group input {
+            width: 100%;
+            padding: 14px 44px 14px 16px;
+            background: rgba(9, 13, 22, 0.9);
+            border: 2px solid rgba(124, 58, 237, 0.5);
+            border-radius: 14px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .admin-input-group input:focus {
+            border-color: #06b6d4;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        .admin-input-group .toggle-eye {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+
+        .admin-input-group .toggle-eye:hover {
+            color: #38bdf8;
+        }
+
+        .btn-admin-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #7c3aed, #0284c7);
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-admin-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.6);
+            background: linear-gradient(135deg, #8b5cf6, #0369a1);
+        }
+
+        .auth-error {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 13px;
+            margin-top: 14px;
+            display: none;
+        }
+
+        .shake-anim {
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
         }
     </style>
 </head>
 <body>
+
+    <!-- Admin Password Overlay Modal -->
+    <div class="admin-login-overlay" id="adminLoginOverlay">
+        <div class="admin-login-card">
+            <div class="lock-badge">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h3>TRM অ্যাডমিন সিকিউরিটি</h3>
+            <p>অ্যাডমিন প্যানেলে প্রবেশ করতে পাসওয়ার্ড দিন</p>
+
+            <div class="admin-input-group">
+                <input type="password" id="adminAuthPassInput" placeholder="পাসওয়ার্ড লিখুন..." onkeydown="if(event.key === 'Enter') verifyAdminPassword()">
+                <i class="fa-solid fa-eye toggle-eye" id="toggleAuthPassIcon" onclick="toggleAuthPassVisibility()"></i>
+            </div>
+
+            <button class="btn-admin-login" onclick="verifyAdminPassword()">
+                প্রবেশ করুন <i class="fa-solid fa-right-to-bracket"></i>
+            </button>
+
+            <div class="auth-error" id="adminAuthError">
+                <i class="fa-solid fa-circle-exclamation"></i> ভুল পাসওয়ার্ড! সঠিক পাসওয়ার্ড দিন।
+            </div>
+        </div>
+    </div>
 
     <div class="ambient-glow glow-1"></div>
     <div class="ambient-glow glow-2"></div>
@@ -582,6 +738,9 @@
                 </button>
                 <button class="btn-config" onclick="openFirebaseConfig()">
                     <i class="fa-solid fa-gear"></i> Firebase Config
+                </button>
+                <button class="btn-config" onclick="adminLogout()" style="background: rgba(239,68,68,0.15); border-color: #ef4444; color:#f87171;" title="লগআউট করুন">
+                    <i class="fa-solid fa-power-off"></i> লগআউট
                 </button>
                 <a href="index.html" target="_blank" class="btn-visit-site">
                     <i class="fa-solid fa-arrow-up-right-from-square"></i> মূল সাইট দেখুন
@@ -1332,6 +1491,67 @@
             alert("✓ bKash ও Nagad Send Money নম্বর সেভ হয়েছে!");
             closePayNumbers();
         }
+
+        // ====== Admin Password Protection ======
+        const ADMIN_SECRET_PASS = "TRM@#123";
+
+        function checkAdminAuth() {
+            const isAuth = sessionStorage.getItem('trm_admin_authenticated');
+            const overlay = document.getElementById('adminLoginOverlay');
+            if (isAuth === 'true') {
+                overlay.style.display = 'none';
+            } else {
+                overlay.style.display = 'flex';
+                document.getElementById('adminAuthPassInput').focus();
+            }
+        }
+
+        function verifyAdminPassword() {
+            const input = document.getElementById('adminAuthPassInput');
+            const errorDiv = document.getElementById('adminAuthError');
+            const val = input.value.trim();
+
+            if (val === ADMIN_SECRET_PASS) {
+                sessionStorage.setItem('trm_admin_authenticated', 'true');
+                errorDiv.style.display = 'none';
+                const overlay = document.getElementById('adminLoginOverlay');
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    overlay.style.opacity = '1';
+                }, 300);
+            } else {
+                errorDiv.style.display = 'block';
+                input.value = '';
+                input.focus();
+                errorDiv.classList.remove('shake-anim');
+                void errorDiv.offsetWidth;
+                errorDiv.classList.add('shake-anim');
+            }
+        }
+
+        function toggleAuthPassVisibility() {
+            const input = document.getElementById('adminAuthPassInput');
+            const icon = document.getElementById('toggleAuthPassIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function adminLogout() {
+            sessionStorage.removeItem('trm_admin_authenticated');
+            location.reload();
+        }
+
+        // Run check on load
+        document.addEventListener('DOMContentLoaded', checkAdminAuth);
+        checkAdminAuth();
     </script>
 </body>
 </html>
