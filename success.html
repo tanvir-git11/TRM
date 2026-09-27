@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRM PREDICTOR LIVE 2.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #030712, #0f172a, #1e1b4b, #020617);
+            background-size: 400% 400%;
+            animation: bgLive 12s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            color: #ffffff;
+            position: relative;
+            overflow-x: hidden;
+            padding: 15px 10px;
+        }
+
+        @keyframes bgLive {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ব্যাকগ্রাউন্ডের চলমান কণা (Particles) */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            display: block;
+            width: 4px;
+            height: 4px;
+            background: rgba(6, 182, 212, 0.7);
+            box-shadow: 0 0 8px #06b6d4, 0 0 15px #8b5cf6;
+            bottom: -20px;
+            animation: fallParticle 6s linear infinite;
+            border-radius: 50%;
+        }
+
+        .particle:nth-child(1) { left: 10%; width: 5px; height: 5px; animation-duration: 5s; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 25%; width: 3px; height: 3px; animation-duration: 7s; animation-delay: 2s; background: #ec4899; box-shadow: 0 0 8px #ec4899; }
+        .particle:nth-child(3) { left: 40%; width: 6px; height: 6px; animation-duration: 4s; animation-delay: 1s; }
+        .particle:nth-child(4) { left: 60%; width: 4px; height: 4px; animation-duration: 8s; animation-delay: 3s; background: #34d399; box-shadow: 0 0 8px #34d399; }
+        .particle:nth-child(5) { left: 75%; width: 5px; height: 5px; animation-duration: 6s; animation-delay: 1.5s; }
+        .particle:nth-child(6) { left: 90%; width: 3px; height: 3px; animation-duration: 5s; animation-delay: 4s; background: #c084fc; box-shadow: 0 0 8px #c084fc; }
+
+        @keyframes fallParticle {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* ১. ওপরের আলাদা সেকশন (রিয়েল টাইম ও ডেভেলপার তাসিন) */
+        .top-wrapper {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .real-time-box {
+            background: rgba(11, 15, 25, 0.9);
+            border: 2px solid rgba(6, 182, 212, 0.5);
+            padding: 10px 15px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #34d399;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .developer-box {
+            background: rgba(11, 15, 25, 0.9);
+            border: 2px solid rgba(236, 72, 153, 0.5);
+            padding: 8px 15px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .developer-name {
+            font-size: 13px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #38bdf8, #c084fc, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: smoothFade 3s ease-in-out infinite;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes smoothFade {
+            0%, 100% { opacity: 0.3; transform: scale(0.97); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+
+        /* ২. মাঝখানের ঢেউ খেলানো (Wavy & Pulsing) রিং ও সিগনাল সেকশন */
+        .middle-predictor-section {
+            position: relative;
+            z-index: 2;
+            width: 340px;
+            height: 340px;
+            margin: auto 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .ring-outer-1 {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 4px dashed rgba(52, 211, 153, 0.7);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.4);
+            transition: transform 1s ease;
+        }
+
+        /* ঢেউ খেলানো ডটেড রিং (Wavy Smooth Ring) */
+        .ring-outer-2 {
+            position: absolute;
+            width: 290px;
+            height: 290px;
+            border: 3px dotted rgba(6, 182, 212, 0.9);
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.5);
+            animation: wavyPulse 3s ease-in-out infinite;
+            transition: transform 1s ease;
+        }
+
+        @keyframes wavyPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); border-color: rgba(6, 182, 212, 0.8); }
+            50% { transform: scale(1.06) rotate(180deg); border-color: rgba(236, 72, 153, 0.9); box-shadow: 0 0 35px rgba(236, 72, 153, 0.7); }
+        }
+
+        .ring-inner {
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            border: 2px solid rgba(139, 92, 246, 0.6);
+            border-radius: 50%;
+            background: rgba(11, 15, 25, 0.85);
+            box-shadow: inset 0 0 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .spin-clockwise {
+            animation: rotateClockwise 8s linear infinite;
+        }
+
+        .spin-counter {
+            animation: rotateCounterClockwise 6s linear infinite;
+        }
+
+        @keyframes rotateClockwise {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes rotateCounterClockwise {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+
+        .predictor-content {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .predictor-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #facc15;
+            text-transform: uppercase;
+        }
+
+        /* ১০ সেকেন্ড পর পর পরিবর্তনশীল এবং অ্যানিমেটেড সিগনাল সংখ্যা */
+        .predictor-number {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #34d399, #38bdf8, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(52, 211, 153, 0.5);
+            transition: all 0.5s ease;
+        }
+
+        .number-change-anim {
+            animation: popNumber 0.8s ease;
+        }
+
+        @keyframes popNumber {
+            0% { transform: scale(0.7); opacity: 0; filter: blur(5px); }
+            50% { transform: scale(1.15); opacity: 1; filter: blur(0px); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .ai-accuracy-badge {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #34d399;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #34d399;
+            box-shadow: 0 0 10px rgba(52, 211, 153, 0.3);
+            margin-top: 5px;
+        }
+
+        /* ৩. নিচের হোয়াটসঅ্যাপ সাপোর্ট বাটন (লাইভ নড়াচড়া অ্যানিমেশনসহ) */
+        .support-btn-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+        }
+
+        .whatsapp-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #22c55e, #16a34a, #0d9488);
+            border: 2px solid rgba(52, 211, 153, 0.6);
+            border-radius: 25px;
+            padding: 14px;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(34, 197, 94, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            animation: btnPulseLive 2s infinite ease-in-out;
+            transition: 0.3s;
+        }
+
+        @keyframes btnPulseLive {
+            0%, 100% { transform: scale(1); box-shadow: 0 5px 20px rgba(34, 197, 94, 0.4); }
+            50% { transform: scale(1.03); box-shadow: 0 8px 25px rgba(52, 211, 153, 0.8); border-color: #34d399; }
+        }
+
+        .whatsapp-btn:hover {
+            transform: scale(1.04);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ব্যাকগ্রাউন্ডের চলমান কণা -->
+    <ul class="particles">
+        <li class="particle"></li>
+        <li class="particle"></li>
+        <li class="particle"></li>
+        <li class="particle"></li>
+        <li class="particle"></li>
+        <li class="particle"></li>
+    </ul>
+
+    <!-- ১. ওপরের আলাদা সেকশন (রিয়েল টাইম এবং ডেভেলপার তাসিন) -->
+    <div class="top-wrapper">
+        <div class="real-time-box">
+            <i class="fa-solid fa-clock"></i> <span id="realTimeClock">10:30:00 AM</span>
+        </div>
+        <div class="developer-box">
+            <div class="developer-name">DEVELOPER: TRM TASIN (টিআরএম তাসিন)</div>
+        </div>
+    </div>
+
+    <!-- ২. মাঝখানের ঢেউ খেলানো রিং ও সিগনাল সেকশন -->
+    <div class="middle-predictor-section">
+        <div class="ring-outer-1 spin-clockwise" id="ring1"></div>
+        <div class="ring-outer-2" id="ring2"></div>
+        <div class="ring-inner"></div>
+
+        <div class="predictor-content">
+            <div class="predictor-title">TRM PREDICTOR</div>
+            <!-- ১০ সেকেন্ড পর পর পরিবর্তনশীল সিগনাল সংখ্যা -->
+            <div class="predictor-number" id="predictorNum">4.77x</div>
+            <div class="ai-accuracy-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> AI ACCURACY 99.9%</div>
+        </div>
+    </div>
+
+    <!-- ৩. নিচের হোয়াটসঅ্যাপ সাপোর্ট বাটন (নির্দিষ্ট নম্বরযুক্ত) -->
+    <div class="support-btn-container">
+        <a href="https://wa.me/8801614361491?text=হ্যালো%20স্যার,%20আপনার%20ভিআইপি%20সাপোর্ট%20নিতে%20চাই।" target="_blank" class="whatsapp-btn">
+            <i class="fa-brands fa-whatsapp" style="font-size: 22px;"></i> ভিআইপি সাপোর্ট সেন্টার
+        </a>
+    </div>
+
+    <script>
+        // ১. রিয়েল টাইম ঘড়ি আপডেট
+        function updateRealTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let seconds = now.getSeconds();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            document.getElementById('realTimeClock').innerText = `${hours}:${minutes}:${seconds} ${ampm}`;
+        }
+        setInterval(updateRealTime, 1000);
+        updateRealTime();
+
+        // ২. ১০ সেকেন্ড পর পর সিগনাল পরিবর্তন এবং রিংয়ের ঘূর্ণন দিক ও ঢেউ বদলানোর সিস্টেম
+        const multipliers = ["4.77x", "2.49x", "6.12x", "11.85x", "1.95x", "8.34x", "15.20x", "3.44x", "4.90x", "2.00x"];
+        let isClockwise = true;
+
+        function updateSignalAndRotation() {
+            const numElement = document.getElementById('predictorNum');
+            
+            // সংখ্যা পরিবর্তনের অ্যানিমেশন ট্রিগার করা
+            numElement.classList.remove('number-change-anim');
+            void numElement.offsetWidth; // Trigger reflow
+            numElement.classList.add('number-change-anim');
+
+            // নতুন র্যান্ডম সিগনাল সেট করা
+            const randomIndex = Math.floor(Math.random() * multipliers.length);
+            numElement.innerText = multipliers[randomIndex];
+
+            // রিংয়ের ঘূর্ণন দিক পরিবর্তন
+            const ring1 = document.getElementById('ring1');
+            if (isClockwise) {
+                ring1.classList.remove('spin-clockwise');
+                ring1.classList.add('spin-counter');
+            } else {
+                ring1.classList.remove('spin-counter');
+                ring1.classList.add('spin-clockwise');
+            }
+            isClockwise = !isClockwise;
+        }
+
+        // প্রতি ১০ সেকেন্ড (১০০০০ মিলিপ্রশিক্ষণ) পর পর সিগনাল ও অ্যানিমেশন আপডেট হবে
+        setInterval(updateSignalAndRotation, 10000);
+    </script>
+</body>
+</html>

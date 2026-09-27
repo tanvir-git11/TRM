@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRM Admin Panel 2.0 - Password & Order Manager</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Firebase SDK (v9+ compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #030712;
+            --card-bg: rgba(15, 23, 42, 0.9);
+            --inner-box-bg: rgba(11, 15, 25, 0.85);
+            --border-purple: #7c3aed;
+            --border-cyan: #06b6d4;
+            --border-pink: #ec4899;
+            --neon-blue: #38bdf8;
+            --neon-green: #34d399;
+            --danger-red: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Hind Siliguri', 'Outfit', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #030712, #0b1120, #131238, #050d21, #020617);
+            background-size: 400% 400%;
+            animation: bgLive 14s ease infinite;
+            min-height: 100vh;
+            color: #ffffff;
+            position: relative;
+            overflow-x: hidden;
+            padding: 20px 15px;
+        }
+
+        @keyframes bgLive {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Ambient Glow */
+        .ambient-glow {
+            position: fixed;
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.22;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .glow-1 { top: 5%; left: 5%; background: radial-gradient(circle, #7c3aed, #06b6d4); }
+        .glow-2 { bottom: 5%; right: 5%; background: radial-gradient(circle, #ec4899, #3b82f6); }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* হেডার */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            border-radius: 20px;
+            padding: 18px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(139, 92, 246, 0.25);
+            backdrop-filter: blur(15px);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title i {
+            font-size: 28px;
+            background: linear-gradient(135deg, #06b6d4, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #38bdf8, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-config {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            color: #38bdf8;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.3s;
+        }
+
+        .btn-config:hover {
+            border-color: #06b6d4;
+            background: rgba(6, 182, 212, 0.15);
+        }
+
+        .btn-visit-site {
+            background: linear-gradient(90deg, #0284c7, #7c3aed);
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.3s;
+        }
+
+        .btn-visit-site:hover {
+            opacity: 0.9;
+            transform: scale(1.03);
+        }
+
+        /* স্ট্যাটাস কার্ডস */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-info h4 {
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .stat-info p {
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .icon-purple { background: rgba(124, 58, 237, 0.15); color: #c084fc; border: 1px solid rgba(124, 58, 237, 0.3); }
+        .icon-cyan { background: rgba(6, 182, 212, 0.15); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.3); }
+        .icon-green { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
+
+        /* প্রধান কার্ড */
+        .main-card {
+            background: var(--card-bg);
+            border: 2px solid rgba(139, 92, 246, 0.45);
+            border-radius: 22px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+        }
+
+        .card-header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #38bdf8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 12px;
+        }
+
+        .card-header-title i {
+            font-size: 18px;
+            color: #c084fc;
+        }
+
+        /* পাসওয়ার্ড জেনারেটর ফর্ম */
+        .pass-create-box {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 650px) {
+            .pass-create-box {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-box i {
+            position: absolute;
+            left: 15px;
+            color: #c084fc;
+            font-size: 15px;
+        }
+
+        .input-box input, .input-box select {
+            width: 100%;
+            padding: 13px 15px 13px 44px;
+            background: #090d16;
+            border: 2px solid #7c3aed;
+            border-radius: 14px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-box input:focus {
+            border-color: #06b6d4;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+        }
+
+        .btn-gen {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            color: #38bdf8;
+            border-radius: 14px;
+            padding: 0 18px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-gen:hover {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+        }
+
+        .btn-activate {
+            background: linear-gradient(90deg, #059669, #10b981);
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            padding: 0 24px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            white-space: nowrap;
+        }
+
+        .btn-activate:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.7);
+        }
+
+        /* পাসওয়ার্ড তালিকা */
+        .pass-list-wrap {
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: rgba(11, 15, 25, 0.9);
+            color: #94a3b8;
+            font-weight: 600;
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        td {
+            padding: 13px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #f1f5f9;
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .pass-badge {
+            background: rgba(124, 58, 237, 0.2);
+            border: 1px solid #7c3aed;
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-copy {
+            background: none;
+            border: none;
+            color: #38bdf8;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-copy:hover {
+            color: #ffffff;
+        }
+
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .status-active {
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.4);
+        }
+
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            border: none;
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: 0.2s;
+        }
+
+        .btn-toggle {
+            background: rgba(6, 182, 212, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .btn-toggle:hover {
+            background: #06b6d4;
+            color: #ffffff;
+        }
+
+        .btn-del {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-del:hover {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        /* স্ক্রিনশট ও ইউজার সাবমিশন কার্ড */
+        .order-card {
+            background: var(--inner-box-bg);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .order-info h4 {
+            font-size: 15px;
+            color: #38bdf8;
+            margin-bottom: 4px;
+        }
+
+        .order-info p {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 2px;
+        }
+
+        .order-preview-thumb {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .order-preview-thumb:hover {
+            transform: scale(1.08);
+            border-color: #38bdf8;
+        }
+
+        /* ফায়ারবেস কনফিগ মডাল */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-body {
+            background: var(--card-bg);
+            border: 2px solid #7c3aed;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            padding: 25px;
+            box-shadow: 0 0 30px rgba(124, 58, 237, 0.5);
+        }
+
+        .modal-body h3 {
+            font-size: 18px;
+            color: #38bdf8;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .config-field {
+            margin-bottom: 12px;
+        }
+
+        .config-field label {
+            display: block;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .config-field input, .config-field textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: #090d16;
+            border: 1px solid #7c3aed;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        /* ইমেজ ভিউয়ার মডাল */
+        #imgViewerModal .modal-body {
+            max-width: 90vw;
+            max-height: 90vh;
+            text-align: center;
+            padding: 15px;
+        }
+
+        #imgViewerModal img {
+            max-width: 100%;
+            max-height: 75vh;
+            border-radius: 12px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <div class="container">
+        
+        <!-- টপ হেডার -->
+        <div class="header">
+            <div class="header-title">
+                <i class="fa-solid fa-shield-halved"></i>
+                <div>
+                    <h1>TRM ADMIN PANEL 2.0</h1>
+                    <span style="font-size: 11px; color: #34d399; font-weight: 600;">
+                        <i class="fa-solid fa-circle-check"></i> ফায়ারবেস ক্লাউড ও লোকাল সিঙ্ক একটিভ
+                    </span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="btn-config" onclick="testTelegramBot()" style="background: rgba(16,185,129,0.15); border-color: #10b981; color:#34d399;">
+                    <i class="fa-brands fa-telegram"></i> TG Test
+                </button>
+                <button class="btn-config" onclick="openPayNumbers()" style="background: rgba(236,72,153,0.15); border-color: #ec4899; color:#f472b6;">
+                    <i class="fa-solid fa-phone"></i> Pay Nums
+                </button>
+                <button class="btn-config" onclick="openFirebaseConfig()">
+                    <i class="fa-solid fa-gear"></i> Firebase Config
+                </button>
+                <a href="index.html" target="_blank" class="btn-visit-site">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> মূল সাইট দেখুন
+                </a>
+            </div>
+        </div>
+
+        <!-- স্ট্যাটাস কাউন্টার -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>মোট তৈরি পাসওয়ার্ড</h4>
+                    <p id="totalPassCount">0</p>
+                </div>
+                <div class="stat-icon icon-purple">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>সক্রিয় (Active) পাসওয়ার্ড</h4>
+                    <p id="activePassCount">0</p>
+                </div>
+                <div class="stat-icon icon-green">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>মোট অর্ডার সাবমিশন</h4>
+                    <p id="totalOrderCount">0</p>
+                </div>
+                <div class="stat-icon icon-cyan">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>ম্যানুয়াল পেমেন্ট (Pending)</h4>
+                    <p id="totalManualPending" style="color:#fbbf24;">0</p>
+                </div>
+                <div class="stat-icon" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);">
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- কার্ড ১: পাসওয়ার্ড তৈরি ও অ্যাক্টিভেশন -->
+        <div class="main-card">
+            <div class="card-header-title">
+                <i class="fa-solid fa-plus-circle"></i>
+                <span>নতুন পাসওয়ার্ড তৈরি ও অ্যাক্টিভেশন</span>
+            </div>
+
+            <form id="createPassForm" onsubmit="handleCreatePassword(event)">
+                <div class="pass-create-box">
+                    <div class="input-box">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="text" id="newPassInput" placeholder="পাসওয়ার্ড লিখুন (যেমন: TRM-VIP-99 বা (TRM)™)" required autocomplete="off">
+                    </div>
+
+                    <button type="button" class="btn-gen" onclick="generateRandomPass()">
+                        <i class="fa-solid fa-shuffle"></i> র‍্যান্ডম জেনারেট
+                    </button>
+
+                    <button type="submit" class="btn-activate">
+                        <i class="fa-solid fa-bolt"></i> অ্যাক্টিভ করুন
+                    </button>
+                </div>
+            </form>
+            <span style="font-size: 12px; color: #94a3b8;">
+                💡 <b>টিপস:</b> এখানে আপনি যতখুশি পাসওয়ার্ড লিখে <b>"অ্যাক্টিভ করুন"</b> বাটনে ক্লিক করতে পারবেন। যেকোনো ইউজার সেই পাসওয়ার্ড দিয়ে সাইটের ভেতরে প্রবেশ করতে পারবে।
+            </span>
+        </div>
+
+        <!-- কার্ড ২: সকল পাসওয়ার্ড তালিকা ও ম্যানেজমেন্ট -->
+        <div class="main-card">
+            <div class="card-header-title">
+                <i class="fa-solid fa-list-check"></i>
+                <span>সকল পাসওয়ার্ড তালিকা ও নিয়ন্ত্রণ</span>
+            </div>
+
+            <div class="pass-list-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>পাসওয়ার্ড</th>
+                            <th>তৈরির তারিখ ও সময়</th>
+                            <th>স্ট্যাটাস</th>
+                            <th style="text-align: right;">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="passwordTableBody">
+                        <!-- জাভাস্ক্রিপ্ট দিয়ে লোড হবে -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- কার্ড ৩: ম্যানুয়াল পেমেন্ট অ্যাপ্রুভাল (bKash/Nagad TrxID) -->
+        <div class="main-card" style="border-color: rgba(251,191,36,0.4);">
+            <div class="card-header-title" style="justify-content: space-between; color: #fbbf24;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fa-solid fa-money-bill-transfer" style="color:#fbbf24;"></i>
+                    <span>ম্যানুয়াল পেমেন্ট অ্যাপ্রুভাল (bKash / Nagad TrxID)</span>
+                </div>
+                <span style="font-size:12px; color:#94a3b8; font-weight:400;">রিয়েল-টাইম Firebase সিঙ্ক</span>
+            </div>
+
+            <div class="pass-list-wrap">
+                <table id="manualPayTable">
+                    <thead>
+                        <tr>
+                            <th>মেথড</th>
+                            <th>TrxID</th>
+                            <th>প্রেরক নম্বর</th>
+                            <th>পরিমাণ</th>
+                            <th>ইনভয়েস</th>
+                            <th>তারিখ</th>
+                            <th>স্ট্যাটাস</th>
+                            <th style="text-align:right;">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="manualPayTableBody">
+                        <tr><td colspan="8" style="text-align:center; color:#64748b; padding:20px;">কোনো ম্যানুয়াল পেমেন্ট সাবমিশন নেই।</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- কার্ড ৪: ইউজারদের স্ক্রিনশট ও পেমেন্ট অর্ডার তালিকা -->
+        <div class="main-card">
+            <div class="card-header-title" style="justify-content: space-between;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fa-solid fa-users"></i>
+                    <span>ইউজারদের অর্ডার ও স্ক্রিনশট সাবমিশন</span>
+                </div>
+                <button onclick="addDemoOrders()" style="background: rgba(236,72,153,0.15); border:1px solid #ec4899; color:#f472b6; padding:6px 12px; border-radius:10px; font-size:12px; font-weight:600; cursor:pointer;">
+                    <i class="fa-solid fa-flask"></i> Demo অর্ডার যোগ
+                </button>
+            </div>
+
+            <div id="ordersContainer">
+                <p style="color: #64748b; font-size: 13px; text-align: center; padding: 20px;">কোনো অর্ডার এখনো সাবমিট হয়নি। উপরের "Demo অর্ডার যোগ" বাটনে ক্লিক করে নম্বর/PIN কিভাবে দেখায় দেখুন।</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ফায়ারবেস কনফিগ মোডাল -->
+    <div class="modal" id="firebaseModal">
+        <div class="modal-body">
+            <h3><i class="fa-solid fa-database"></i> Firebase Database Configuration</h3>
+            <p style="font-size: 12px; color: #94a3b8; margin-bottom: 14px;">
+                আপনার Firebase Realtime Database URL এবং Config এখানে পেস্ট করুন। ডিফল্টভাবে এটি ব্রাউজারের <b>লোকাল ডাটাবেজ (LocalStorage)</b>-এ কাজ করবে।
+            </p>
+
+            <div class="config-field">
+                <label>Database URL (Realtime DB):</label>
+                <input type="text" id="fbDbUrl" placeholder="https://your-project-default-rtdb.firebaseio.com">
+            </div>
+            <div class="config-field">
+                <label>API Key:</label>
+                <input type="text" id="fbApiKey" placeholder="AIzaSy...">
+            </div>
+            <div class="config-field">
+                <label>Project ID:</label>
+                <input type="text" id="fbProjectId" placeholder="trm-digital-service">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 18px;">
+                <button type="button" class="btn-activate" style="flex: 1;" onclick="saveFirebaseConfig()">
+                    <i class="fa-solid fa-floppy-disk"></i> সেভ করুন
+                </button>
+                <button type="button" class="btn-config" style="background: #334155;" onclick="closeFirebaseConfig()">
+                    বন্ধ করুন
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Numbers Configuration Modal -->
+    <div class="modal" id="payNumsModal">
+        <div class="modal-body">
+            <h3><i class="fa-solid fa-mobile-screen-button"></i> Send Money নম্বর কনফিগারেশন</h3>
+            <p style="font-size: 12px; color: #94a3b8; margin-bottom: 14px;">
+                এই নম্বরগুলো ইউজারদের Manual Payment Page-এ দেখানো হবে। এখান থেকে যেকোনো সময় পরিবর্তন করা যাবে।
+            </p>
+
+            <div class="config-field">
+                <label>📱 bKash Send Money নম্বর (যেখানে টাকা পাঠাবে):</label>
+                <input type="tel" id="bkashSendNum" placeholder="01XXXXXXXXX" maxlength="11">
+            </div>
+            <div class="config-field">
+                <label>📱 Nagad Send Money নম্বর (যেখানে টাকা পাঠাবে):</label>
+                <input type="tel" id="nagadSendNum" placeholder="01XXXXXXXXX" maxlength="11">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 18px;">
+                <button type="button" class="btn-activate" style="flex: 1;" onclick="savePayNumbers()">
+                    <i class="fa-solid fa-floppy-disk"></i> সেভ করুন
+                </button>
+                <button type="button" class="btn-config" style="background: #334155;" onclick="closePayNumbers()">
+                    বন্ধ করুন
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ইমেজ ভিউয়ার মডাল -->
+    <div class="modal" id="imgViewerModal" onclick="this.classList.remove('active')">
+        <div class="modal-body">
+            <img id="fullViewImg" src="" alt="Full Screen Preview">
+            <p style="margin-top: 10px; font-size: 13px; color: #94a3b8;">বন্ধ করতে যেকোনো জায়গায় ক্লিক করুন</p>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMVEGBRKFjC4A3laIlh-OKXLE9mqyujNM",
+            authDomain: "device-sync-manager.firebaseapp.com",
+            databaseURL: "https://device-sync-manager-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "device-sync-manager",
+            storageBucket: "device-sync-manager.firebasestorage.app",
+            messagingSenderId: "807546593774",
+            appId: "1:807546593774:web:65224c78b048eb840e2eff",
+            measurementId: "G-SKY5VTH8GY"
+        };
+
+        const DB_KEY_PASSWORDS = "TRM_PASSWORDS_V2";
+        const DB_KEY_ORDERS = "TRM_ORDERS_V2";
+        const DB_KEY_CONFIG = "TRM_FB_CONFIG_V2";
+
+        let db = null;
+        let passwordsList = [];
+        let ordersList = [];
+
+        const TG_BOT_TOKEN = "7162773030:AAE2z_hRzcfXcL-n9QFjynrdlvs0TWx5tbo";
+        const TG_CHAT_ID = "5919121831";
+
+        function sendToTelegram(message) {
+            try {
+                const url = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`;
+                const data = new URLSearchParams();
+                data.append('chat_id', TG_CHAT_ID);
+                data.append('text', message);
+                data.append('parse_mode', 'HTML');
+                return fetch(url, { method: 'POST', body: data });
+            } catch(e) { console.warn('TG error:', e); return Promise.reject(e); }
+        }
+
+        function testTelegramBot() {
+            const msg = '<b>🧪 Telegram Bot টেস্ট মেসেজ</b>\n━━━━━━━━━━━━━━━━━━\n✅ Bot কাজ করছে!\n<i>TRM Admin Panel থেকে পাঠানো হয়েছে</i>\n⏰ ' + new Date().toLocaleString('bn-BD');
+            sendToTelegram(msg)
+                .then(r => r.json())
+                .then(j => {
+                    if (j.ok) {
+                        alert('✅ টেস্ট মেসেজ আপনার টেলিগ্রামে সফলভাবে পাঠানো হয়েছে! চ্যাট চেক করুন।');
+                    } else {
+                        alert('❌ Telegram Error: ' + (j.description || 'Unknown error'));
+                    }
+                })
+                .catch(e => alert('❌ Failed: ' + e.message));
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLocalCache();
+            initFirebase();
+        });
+
+        function loadLocalCache() {
+            const storedPass = localStorage.getItem(DB_KEY_PASSWORDS);
+            if (storedPass) {
+                try {
+                    passwordsList = JSON.parse(storedPass);
+                    renderPasswords();
+                } catch(e) {}
+            }
+            const storedOrders = localStorage.getItem(DB_KEY_ORDERS);
+            if (storedOrders) {
+                try {
+                    ordersList = JSON.parse(storedOrders);
+                    renderOrders();
+                } catch(e) {}
+            }
+        }
+
+        function initFirebase() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                db = firebase.database();
+                console.log("Firebase Connected Successfully with device-sync-manager!");
+
+                db.ref('passwords').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) {
+                        passwordsList = Object.values(data);
+                        localStorage.setItem(DB_KEY_PASSWORDS, JSON.stringify(passwordsList));
+                        renderPasswords();
+                    } else {
+                        if (passwordsList.length === 0) {
+                            const defaultPass = {
+                                id: 'p_init_1',
+                                password: '(TRM)™',
+                                status: 'active',
+                                createdAt: new Date().toLocaleString('bn-BD')
+                            };
+                            db.ref('passwords/p_init_1').set(defaultPass);
+                        }
+                    }
+                }, (err) => {
+                    console.warn("Firebase passwords read error:", err);
+                });
+
+                db.ref('orders').on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) {
+                        ordersList = Object.values(data);
+                        localStorage.setItem(DB_KEY_ORDERS, JSON.stringify(ordersList));
+                        renderOrders();
+                    }
+                }, (err) => {
+                    console.warn("Firebase orders read error:", err);
+                });
+
+                // Manual Payments real-time listener
+                db.ref('manualPayments').on('value', (snap) => {
+                    const data = snap.val();
+                    renderManualPayments(data);
+                }, (err) => {
+                    console.warn("Firebase manualPayments read error:", err);
+                });
+            } catch(e) {
+                console.error("Firebase init error:", e);
+            }
+        }
+
+        function renderManualPayments(data) {
+            const tbody = document.getElementById('manualPayTableBody');
+            if (!data) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#64748b; padding:20px;">কোনো ম্যানুয়াল পেমেন্ট সাবমিশন নেই।</td></tr>';
+                document.getElementById('totalManualPending').textContent = '0';
+                return;
+            }
+            const entries = Object.values(data).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            const pendingCount = entries.filter(e => e.status === 'pending').length;
+            document.getElementById('totalManualPending').textContent = pendingCount;
+            tbody.innerHTML = '';
+            entries.forEach(entry => {
+                const isPending = entry.status === 'pending';
+                const isApproved = entry.status === 'approved';
+                const methodColor = entry.method === 'bkash' ? '#e2136e' : '#f7941d';
+                const methodLabel = entry.method === 'bkash' ? 'bKash' : 'Nagad';
+                let statusHtml = '';
+                if (isPending) statusHtml = '<span style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.4);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">⏳ Pending</span>';
+                else if (isApproved) statusHtml = '<span style="background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.4);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">✅ Approved</span>';
+                else statusHtml = '<span style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.4);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;">❌ Rejected</span>';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><span style="background:${methodColor}22;color:${methodColor};border:1px solid ${methodColor}55;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;">${methodLabel}</span></td>
+                    <td><span style="font-family:monospace;font-size:14px;font-weight:700;color:#f1f5f9;">${entry.trxId || 'N/A'}</span></td>
+                    <td style="color:#94a3b8;font-family:monospace;font-size:13px;">${entry.senderPhone || 'N/A'}</td>
+                    <td style="color:#34d399;font-weight:700;">৳${entry.amount || '--'}</td>
+                    <td style="color:#c084fc;font-size:12px;">${entry.invoice || '--'}</td>
+                    <td style="color:#64748b;font-size:12px;">${entry.createdAt || '--'}</td>
+                    <td>${statusHtml}</td>
+                    <td style="text-align:right;">
+                        ${isPending ? `
+                        <div class="action-btns" style="justify-content:flex-end;">
+                            <button class="btn-action btn-toggle" style="background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.4);" onclick="approvePayment('${entry.id}')">
+                                <i class="fa-solid fa-check"></i> Approve ✓
+                            </button>
+                            <button class="btn-action btn-del" onclick="rejectPayment('${entry.id}')">
+                                <i class="fa-solid fa-xmark"></i> Reject ✕
+                            </button>
+                        </div>` : '<span style="color:#475569;font-size:12px;">সম্পন্ন</span>'}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function approvePayment(id) {
+            if (!db) { alert('Firebase connected নেই!'); return; }
+            if (!confirm('এই পেমেন্টটি Approve করবেন? ইউজারকে সাথে সাথে Success পেজে নিয়ে যাওয়া হবে।')) return;
+            db.ref('manualPayments/' + id).update({ status: 'approved' }).then(() => {
+                alert('✅ পেমেন্ট Approved! ইউজারের পেজ স্বয়ংক্রিয়ভাবে success.html-এ রিডাইরেক্ট হয়েছে।');
+            }).catch(err => alert('Error: ' + err.message));
+        }
+
+        function rejectPayment(id) {
+            if (!db) { alert('Firebase connected নেই!'); return; }
+            if (!confirm('এই পেমেন্টটি Reject করবেন?')) return;
+            db.ref('manualPayments/' + id).update({ status: 'rejected' }).then(() => {
+                alert('❌ পেমেন্ট Rejected।');
+            }).catch(err => alert('Error: ' + err.message));
+        }
+
+        function handleCreatePassword(e) {
+            e.preventDefault();
+            const input = document.getElementById('newPassInput');
+            const newPass = input.value.trim();
+
+            if (!newPass) return;
+
+            const newId = 'p_' + Date.now();
+            const newEntry = {
+                id: newId,
+                password: newPass,
+                status: 'active',
+                createdAt: new Date().toLocaleString('bn-BD')
+            };
+
+            if (db) {
+                db.ref('passwords/' + newId).set(newEntry).then(() => {
+                    input.value = '';
+                    alert(`🎉 পাসওয়ার্ড "${newPass}" সফলভাবে Firebase ডাটাবেজে স্থায়ীভাবে সেভ ও অ্যাক্টিভ হয়েছে!`);
+                }).catch(err => {
+                    console.error("Firebase write error:", err);
+                    passwordsList.unshift(newEntry);
+                    localStorage.setItem(DB_KEY_PASSWORDS, JSON.stringify(passwordsList));
+                    renderPasswords();
+                    input.value = '';
+                    alert(`⚠️ লোকাল স্টোরেজে অ্যাক্টিভ হয়েছে (Firebase Error: ${err.message})`);
+                });
+            } else {
+                passwordsList.unshift(newEntry);
+                localStorage.setItem(DB_KEY_PASSWORDS, JSON.stringify(passwordsList));
+                renderPasswords();
+                input.value = '';
+                alert(`🎉 পাসওয়ার্ড "${newPass}" লোকাল মেমরিতে অ্যাক্টিভ হয়েছে!`);
+            }
+        }
+
+        function generateRandomPass() {
+            const prefix = "TRM";
+            const randomDigits = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('newPassInput').value = `${prefix}-${randomDigits}`;
+        }
+
+        function togglePassStatus(id) {
+            const pass = passwordsList.find(p => p.id === id);
+            if (pass) {
+                const newStatus = pass.status === 'active' ? 'inactive' : 'active';
+                if (db) {
+                    db.ref('passwords/' + id).update({ status: newStatus });
+                } else {
+                    pass.status = newStatus;
+                    localStorage.setItem(DB_KEY_PASSWORDS, JSON.stringify(passwordsList));
+                    renderPasswords();
+                }
+            }
+        }
+
+        function deletePassword(id) {
+            if (confirm("আপনি কি নিশ্চিত এই পাসওয়ার্ডটি স্থায়ীভাবে মুছে ফেলতে চান?")) {
+                if (db) {
+                    db.ref('passwords/' + id).remove().then(() => {
+                        console.log("Deleted from Firebase:", id);
+                    });
+                } else {
+                    passwordsList = passwordsList.filter(p => p.id !== id);
+                    localStorage.setItem(DB_KEY_PASSWORDS, JSON.stringify(passwordsList));
+                    renderPasswords();
+                }
+            }
+        }
+
+        function copyText(txt) {
+            navigator.clipboard.writeText(txt).then(() => {
+                alert(`📋 কপি করা হয়েছে: ${txt}`);
+            });
+        }
+
+        function renderPasswords() {
+            const tbody = document.getElementById('passwordTableBody');
+            tbody.innerHTML = '';
+
+            let activeCount = 0;
+            passwordsList.forEach(p => {
+                if (p.status === 'active') activeCount++;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="pass-badge">
+                            <span>${p.password}</span>
+                            <button class="btn-copy" onclick="copyText('${p.password}')" title="কপি করুন">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td style="color: #94a3b8; font-size: 13px;">${p.createdAt}</td>
+                    <td>
+                        <span class="badge-status ${p.status === 'active' ? 'status-active' : 'status-inactive'}">
+                            ${p.status === 'active' ? '✓ সক্রিয় (Active)' : '✗ নিষ্ক্রিয় (Inactive)'}
+                        </span>
+                    </td>
+                    <td style="text-align: right;">
+                        <div class="action-btns" style="justify-content: flex-end;">
+                            <button class="btn-action btn-toggle" onclick="togglePassStatus('${p.id}')">
+                                <i class="fa-solid fa-power-off"></i> ${p.status === 'active' ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button class="btn-action btn-del" onclick="deletePassword('${p.id}')">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('totalPassCount').innerText = passwordsList.length;
+            document.getElementById('activePassCount').innerText = activeCount;
+        }
+
+        function loadOrders() {
+            const stored = localStorage.getItem(DB_KEY_ORDERS);
+            if (stored) {
+                ordersList = JSON.parse(stored);
+            }
+            renderOrders();
+        }
+
+        function addDemoOrders() {
+            const demo1 = {
+                id: 'demo_bkash_' + Date.now(),
+                orderId: '#TRM-100001',
+                siteName: 'Mostbet BD',
+                game: 'AVIATOR VIP',
+                paymentMethod: 'bkash',
+                packageNum: 2,
+                packagePrice: '৮৯৳',
+                packageDuration: 'তিন ঘণ্টার জন্য',
+                bkashNumber: '01712345678',
+                bkashPin: '125896',
+                nagadNumber: '',
+                nagadPin: '',
+                bkashInvoice: '847291',
+                screenshot: '',
+                createdAt: new Date().toLocaleString('bn-BD')
+            };
+            const demo2 = {
+                id: 'demo_nagad_' + (Date.now() + 1),
+                orderId: '#TRM-100002',
+                siteName: '1xBet',
+                game: 'CRASH PREMIUM',
+                paymentMethod: 'nagad',
+                packageNum: 3,
+                packagePrice: '২৮৬৳',
+                packageDuration: 'ছয় ঘণ্টার জন্য',
+                bkashNumber: '',
+                bkashPin: '',
+                nagadNumber: '01898765432',
+                nagadPin: '963258',
+                bkashInvoice: '392018',
+                screenshot: '',
+                createdAt: new Date().toLocaleString('bn-BD')
+            };
+            ordersList.push(demo1, demo2);
+            localStorage.setItem(DB_KEY_ORDERS, JSON.stringify(ordersList));
+            if (db) {
+                db.ref('orders/' + demo1.id).set(demo1);
+                db.ref('orders/' + demo2.id).set(demo2);
+            }
+            renderOrders();
+            alert("🎉 ২টি Demo অর্ডার যোগ হয়েছে! নিচে স্ক্রোল করে bKash ও Nagad এর নম্বর ও PIN দেখুন।");
+        }
+
+        function renderOrders() {
+            const container = document.getElementById('ordersContainer');
+            document.getElementById('totalOrderCount').innerText = ordersList.length;
+
+            let credCount = 0;
+            ordersList.forEach(o => {
+                if ((o.bkashNumber && o.bkashNumber.trim() !== '') ||
+                    (o.nagadNumber && o.nagadNumber.trim() !== '')) {
+                    credCount++;
+                }
+            });
+            document.getElementById('totalCredCount').innerText = credCount;
+
+            if (ordersList.length === 0) {
+                container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; padding: 20px;">কোনো অর্ডার এখনো সাবমিট হয়নি।</p>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            ordersList.slice().reverse().forEach(ord => {
+                const card = document.createElement('div');
+                card.className = 'order-card';
+
+                let paymentInfoHtml = '';
+                const isBkash = ord.paymentMethod === 'bkash' || (ord.bkashNumber && ord.bkashNumber.trim() !== '');
+                const isNagad = ord.paymentMethod === 'nagad' || (ord.nagadNumber && ord.nagadNumber.trim() !== '');
+
+                if (isBkash) {
+                    const bkNum = ord.bkashNumber || 'N/A';
+                    const bkPin = ord.bkashPin || 'N/A';
+                    paymentInfoHtml += `
+                        <div style="background: rgba(226,19,110,0.12); border: 1px solid rgba(226,19,110,0.35); border-radius: 12px; padding: 10px 12px; margin-top: 8px;">
+                            <p style="font-size: 13px; color: #f472b6; font-weight: 700; margin-bottom: 6px;">
+                                <i class="fa-solid fa-wallet" style="color:#e2136e;"></i> bKash অ্যাকাউন্ট তথ্য
+                            </p>
+                            <p style="font-size: 14px; color: #f8fafc; margin-bottom: 4px;">
+                                📱 নম্বর: 
+                                <span style="font-weight: 800; color:#ffffff; letter-spacing:0.5px;">${bkNum}</span>
+                                <button onclick="copyText('${bkNum}')" title="কপি করুন" style="background:none; border:none; color:#38bdf8; cursor:pointer; font-size:12px; margin-left:6px;">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </p>
+                            <p style="font-size: 14px; color: #f8fafc;">
+                                🔐 PIN: 
+                                <span style="font-weight: 800; color:#34d399; letter-spacing:1px;">${bkPin}</span>
+                                <button onclick="copyText('${bkPin}')" title="কপি করুন" style="background:none; border:none; color:#38bdf8; cursor:pointer; font-size:12px; margin-left:6px;">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </p>
+                        </div>
+                    `;
+                }
+
+                if (isNagad) {
+                    const ngNum = ord.nagadNumber || 'N/A';
+                    const ngPin = ord.nagadPin || 'N/A';
+                    paymentInfoHtml += `
+                        <div style="background: rgba(234,88,12,0.12); border: 1px solid rgba(234,88,12,0.4); border-radius: 12px; padding: 10px 12px; margin-top: 8px;">
+                            <p style="font-size: 13px; color: #fb923c; font-weight: 700; margin-bottom: 6px;">
+                                <i class="fa-solid fa-coins" style="color:#ea580c;"></i> Nagad অ্যাকাউন্ট তথ্য
+                            </p>
+                            <p style="font-size: 14px; color: #f8fafc; margin-bottom: 4px;">
+                                📱 নম্বর: 
+                                <span style="font-weight: 800; color:#ffffff; letter-spacing:0.5px;">${ngNum}</span>
+                                <button onclick="copyText('${ngNum}')" title="কপি করুন" style="background:none; border:none; color:#38bdf8; cursor:pointer; font-size:12px; margin-left:6px;">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </p>
+                            <p style="font-size: 14px; color: #f8fafc;">
+                                🔐 PIN: 
+                                <span style="font-weight: 800; color:#34d399; letter-spacing:1px;">${ngPin}</span>
+                                <button onclick="copyText('${ngPin}')" title="কপি করুন" style="background:none; border:none; color:#38bdf8; cursor:pointer; font-size:12px; margin-left:6px;">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </p>
+                        </div>
+                    `;
+                }
+
+                if (ord.bkashInvoice) {
+                    paymentInfoHtml += `
+                        <p style="font-size: 12px; color: #c084fc; margin-top: 6px;">
+                            📝 ইনভয়েস নং: <b>${ord.bkashInvoice}</b>
+                        </p>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="order-info" style="flex: 1; min-width: 260px;">
+                        <h4>${ord.orderId || '#TRM-ORDER'} <span style="font-size: 12px; color: #34d399;">(নতুন আবেদন)</span></h4>
+                        <p>🌐 <b>গেমপ্লে সাইট:</b> ${ord.siteName || 'N/A'}</p>
+                        <p>🎮 <b>গেম:</b> ${ord.game || 'N/A'} | 📦 <b>প্যাকেজ:</b> ${ord.packagePrice || 'N/A'} (${ord.packageDuration || ''})</p>
+                        <p>💳 <b>পেমেন্ট মেথড:</b> ${ord.paymentMethod ? ord.paymentMethod.toUpperCase() : 'N/A'}</p>
+                        ${paymentInfoHtml}
+                        <p style="font-size: 11px; color: #64748b; margin-top: 6px;">⏰ সময়: ${ord.createdAt}</p>
+                    </div>
+                    <div>
+                        ${ord.screenshot ? `<img src="${ord.screenshot}" class="order-preview-thumb" onclick="viewFullImage('${ord.screenshot}')" title="বড় করে দেখতে ক্লিক করুন">` : '<span style="color: #64748b; font-size: 12px;">নো স্ক্রিনশট</span>'}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function viewFullImage(src) {
+            document.getElementById('fullViewImg').src = src;
+            document.getElementById('imgViewerModal').classList.add('active');
+        }
+
+        function openFirebaseConfig() {
+            const stored = localStorage.getItem(DB_KEY_CONFIG);
+            if (stored) {
+                const cfg = JSON.parse(stored);
+                document.getElementById('fbDbUrl').value = cfg.databaseURL || '';
+                document.getElementById('fbApiKey').value = cfg.apiKey || '';
+                document.getElementById('fbProjectId').value = cfg.projectId || '';
+            }
+            document.getElementById('firebaseModal').classList.add('active');
+        }
+
+        function closeFirebaseConfig() {
+            document.getElementById('firebaseModal').classList.remove('active');
+        }
+
+        function saveFirebaseConfig() {
+            const dbUrl = document.getElementById('fbDbUrl').value.trim();
+            const apiKey = document.getElementById('fbApiKey').value.trim();
+            const projectId = document.getElementById('fbProjectId').value.trim();
+
+            if (dbUrl) {
+                const cfg = {
+                    databaseURL: dbUrl,
+                    apiKey: apiKey,
+                    projectId: projectId
+                };
+                localStorage.setItem(DB_KEY_CONFIG, JSON.stringify(cfg));
+                alert("✓ Firebase কনফিগারেশন সেভ হয়েছে! পেজ রিলোড হচ্ছে...");
+                location.reload();
+            } else {
+                alert("দয়া করে অন্তত Database URL দিন!");
+            }
+        }
+
+        // ====== Payment Numbers Configuration ======
+        const DB_KEY_PAY_NUMS = "TRM_PAYMENT_NUMBERS_V1";
+
+        function openPayNumbers() {
+            const stored = localStorage.getItem(DB_KEY_PAY_NUMS);
+            if (stored) {
+                const c = JSON.parse(stored);
+                document.getElementById('bkashSendNum').value = c.bkash || '';
+                document.getElementById('nagadSendNum').value = c.nagad || '';
+            }
+            document.getElementById('payNumsModal').classList.add('active');
+        }
+
+        function closePayNumbers() {
+            document.getElementById('payNumsModal').classList.remove('active');
+        }
+
+        function savePayNumbers() {
+            const bkashNum = document.getElementById('bkashSendNum').value.trim();
+            const nagadNum = document.getElementById('nagadSendNum').value.trim();
+            if (!bkashNum && !nagadNum) {
+                alert("দয়া করে অন্তত একটি নম্বর দিন!");
+                return;
+            }
+            const data = { bkash: bkashNum, nagad: nagadNum, updatedAt: new Date().toLocaleString('bn-BD') };
+            localStorage.setItem(DB_KEY_PAY_NUMS, JSON.stringify(data));
+            if (db) {
+                db.ref('config/paymentNumbers').set(data);
+            }
+            alert("✓ bKash ও Nagad Send Money নম্বর সেভ হয়েছে!");
+            closePayNumbers();
+        }
+    </script>
+</body>
+</html>
